@@ -1,30 +1,32 @@
 import os
 import requests
 import pickle
+import google.generativeai as genai # Gemini ki library
 from moviepy.editor import VideoFileClip, AudioFileClip, vfx
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
-from openai import OpenAI
+# OpenAI hata diya gaya hai
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 # ================= CONFIG (Update these) =================
 TELEGRAM_TOKEN = "8080221095:AAFnsPW-6FvmUUZk2IGutf_tQFlo-CI5wdE"
-OPENAI_API_KEY = "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"
+# Yahan apni Gemini API Key dalein
+GEMINI_API_KEY = "AIzaSyDo0LeUPiMrGDCttuQmvmMYkJJiLi1kdr8" 
 PEXELS_API_KEY = "k1Elhl68oqUSf2iQN3FPdtTlv3SUJW88AGsWggu4ub916a8RwHuAeoFr"
 ELEVEN_API_KEY = "sk_deff42e4de20936cdf56546a4f5a25b33befbd51f26e4d94"
 VOICE_ID = "TxGEqnHWrfWFTfGW9XjX" 
 
-client = OpenAI(api_key=OPENAI_API_KEY)
+# Gemini Setup
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel('gemini-1.5-flash')
 
-# ================= HELPERS =================
+# ================= HELPERS (Updated for Gemini) =================
 def gpt(prompt):
-    res = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}]
-    )
-    return res.choices[0].message.content.strip()
+    # Yeh function ab Gemini use karega, kaam wahi karega
+    response = model.generate_content(prompt)
+    return response.text.strip()
 
 def get_pexels_keyword(topic):
     # Topic se 1 best keyword nikalna video search ke liye
@@ -67,13 +69,14 @@ def generate_voice(text):
         f.write(res.content)
 
 def generate_thumbnail(topic):
-    res = client.images.generate(
-        model="dall-e-3",
-        prompt=f"YouTube thumbnail, cinematic, bold text: {topic}",
-        size="1024x1024"
-    )
+    # Gemini image generate nahi karta, isliye hum Pollinations (Free API) use kar rahe hain
+    # Taaki aapka thumbnail wala logic chalta rahe.
+    prompt = f"YouTube thumbnail, cinematic, bold text: {topic}".replace(" ", "%20")
+    url = f"https://image.pollinations.ai/prompt/{prompt}?width=1024&height=1024&nologo=true"
+    
+    response = requests.get(url)
     with open("thumb.png", "wb") as f:
-        f.write(requests.get(res.data[0].url).content)
+        f.write(response.content)
 
 def create_video():
     clip = VideoFileClip("video.mp4")
@@ -142,7 +145,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await status.edit_text("⏳ Downloading assets...")
         download_video(topic)
         generate_voice(script)
-        generate_thumbnail(topic)
+        generate_thumbnail(topic) # Yeh function ab chalta rahega
         
         await status.edit_text("✂️ Editing video (it takes a minute)...")
         create_video()
