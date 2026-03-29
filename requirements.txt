@@ -1,6 +1,7 @@
-moviepy==1.0.3
-openai
+google-generativeai
+moviepy
 python-telegram-bot
-google-api-python-client
-google-auth-oauthlib
 requests
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
