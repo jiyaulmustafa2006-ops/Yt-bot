@@ -11,7 +11,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 
 # ================= CONFIG (Update these) =================
 TELEGRAM_TOKEN = "8080221095:AAFnsPW-6FvmUUZk2IGutf_tQFlo-CI5wdE"
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = "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"
 PEXELS_API_KEY = "k1Elhl68oqUSf2iQN3FPdtTlv3SUJW88AGsWggu4ub916a8RwHuAeoFr"
 ELEVEN_API_KEY = "sk_deff42e4de20936cdf56546a4f5a25b33befbd51f26e4d94"
 VOICE_ID = "TxGEqnHWrfWFTfGW9XjX" 
