@@ -2,35 +2,32 @@ import os
 import requests
 import pickle
 import warnings
-# Purane version ki warnings ko ignore karne ke liye
+# Warnings ko hide karne ke liye
 warnings.filterwarnings("ignore")
 
-# Nayi Libraries ka sahi import
-try:
-    from google import genai
-    from moviepy import VideoFileClip, AudioFileClip, vfx
-except ImportError:
-    print("❌ Libraries missing! Please run: pip install google-genai moviepy")
-
+# Nayi Libraries ka sahi import (Phone friendly)
+from google import genai
+from moviepy import VideoFileClip, AudioFileClip, vfx
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-# ================= CONFIG (Yahan apni keys dalo) =================
+# ================= CONFIG (Apni keys yahan bharein) =================
 TELEGRAM_TOKEN = "8080221095:AAFnsPW-6FvmUUZk2IGutf_tQFlo-CI5wdE"
 GEMINI_API_KEY = "AIzaSyDo0LeUPiMrGDCttuQmvmMYkJJiLi1kdr8" 
 PEXELS_API_KEY = "k1Elhl68oqUSf2iQN3FPdtTlv3SUJW88AGsWggu4ub916a8RwHuAeoFr"
 ELEVEN_API_KEY = "sk_deff42e4de20936cdf56546a4f5a25b33befbd51f26e4d94"
 VOICE_ID = "TxGEqnHWrfWFTfGW9XjX" 
 
-# Gemini Setup (Naya Method)
+# Naya Gemini Client Setup
 client_gemini = genai.Client(api_key=GEMINI_API_KEY)
 
 # ================= HELPERS =================
 def gpt(prompt):
     try:
+        # Naya Gemini syntax (Python 3.10+ and Phone stable)
         response = client_gemini.models.generate_content(
             model="gemini-1.5-flash", 
             contents=prompt
@@ -38,10 +35,11 @@ def gpt(prompt):
         return response.text.strip()
     except Exception as e:
         print(f"Gemini Error: {e}")
-        return "Error"
+        return "Error in text generation"
 
 def get_pexels_keyword(topic):
-    return gpt(f"Give me only one English keyword to search stock video for: {topic}")
+    keyword = gpt(f"Give me only one English keyword to search stock video for: {topic}")
+    return keyword if keyword else "technology"
 
 # ================= MAIN FUNCTIONS =================
 
@@ -64,7 +62,8 @@ def download_video(topic):
         with open("video.mp4", "wb") as f:
             f.write(requests.get(video_url).content)
     else:
-        raise Exception("Pexels video nahi mila!")
+        # Simple fallback
+        raise Exception("Pexels video match nahi hua.")
 
 def generate_voice(text):
     url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
@@ -79,30 +78,31 @@ def generate_voice(text):
         with open("voice.mp3", "wb") as f:
             f.write(res.content)
     else:
-        raise Exception(f"ElevenLabs Error: {res.text}")
+        raise Exception("ElevenLabs voice generation failed.")
 
 def generate_thumbnail(topic):
-    # Gemini image nahi banata, isliye Pollinations use kiya
+    # Free API for image generation
     prompt = topic.replace(" ", "%20")
     url = f"https://image.pollinations.ai/prompt/youtube_thumbnail_{prompt}?width=1024&height=1024"
     with open("thumb.png", "wb") as f:
         f.write(requests.get(url).content)
 
 def create_video():
-    # MoviePy 2.0+ syntax
+    # MoviePy 2.0+ (Naya structure jo crash nahi hoga)
     clip = VideoFileClip("video.mp4")
     audio = AudioFileClip("voice.mp3")
 
+    # Audio ke hisaab se video adjust karna
     if clip.duration < audio.duration:
-        # Naya Loop method
         clip = clip.with_effects([vfx.Loop(duration=audio.duration)])
     else:
         clip = clip.subclipped(0, audio.duration)
 
     final_clip = clip.with_audio(audio)
-    # Phone par resizing ke bina speed fast rahegi
-    final_clip.write_videofile("final.mp4", fps=24, codec="libx264", audio_codec="aac")
+    # Write final file
+    final_clip.write_videofile("final.mp4", fps=24, codec="libx264", audio_codec="aac", logger=None)
     
+    # Files close karna zaroori hai phone ki memory ke liye
     clip.close()
     audio.close()
 
@@ -115,7 +115,7 @@ def youtube_auth():
             creds = pickle.load(f)
     if not creds or not creds.valid:
         if not os.path.exists("client_secrets.json"):
-            raise Exception("❌ client_secrets.json missing!")
+            raise Exception("client_secrets.json missing in folder!")
         flow = InstalledAppFlow.from_client_secrets_file(
             "client_secrets.json", 
             scopes=["https://www.googleapis.com/auth/youtube.upload"]
@@ -134,7 +134,7 @@ def upload_to_yt(youtube, title, desc, tags):
     req = youtube.videos().insert(part="snippet,status", body=body, media_body=media)
     res = req.execute()
     
-    # Thumbnail upload
+    # Thumbnail upload logic
     thumb_media = MediaFileUpload("thumb.png", mimetype="image/png")
     youtube.thumbnails().set(videoId=res["id"], media_body=thumb_media).execute()
     return res["id"]
@@ -143,29 +143,25 @@ def upload_to_yt(youtube, title, desc, tags):
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     topic = update.message.text
-    status = await update.message.reply_text(f"🎬 Processing: {topic}...")
+    status = await update.message.reply_text(f"🚀 Starting Bot: {topic}...")
     
     try:
-        # 1. Generate Content
-        await status.edit_text("🤖 Gemini writing script...")
+        await status.edit_text("✍️ Gemini is writing script...")
         script, title, desc, tags = generate_all(topic)
         
-        # 2. Download Assets
-        await status.edit_text("⏳ Downloading Video & Voice...")
+        await status.edit_text("🎵 Downloading assets...")
         download_video(topic)
         generate_voice(script)
         generate_thumbnail(topic)
         
-        # 3. Edit Video
-        await status.edit_text("✂️ Editing Video (MoviePy 2.0)...")
+        await status.edit_text("🎞️ Processing Video (MoviePy 2.0)...")
         create_video()
         
-        # 4. Upload to YouTube
-        await status.edit_text("🚀 Uploading to YouTube...")
+        await status.edit_text("📤 Uploading to YouTube...")
         yt = youtube_auth()
         video_id = upload_to_yt(yt, title, desc, tags)
         
-        await status.edit_text(f"✅ Success!\nTitle: {title}\nURL: https://youtu.be/{video_id}")
+        await status.edit_text(f"✅ Mission Success!\nURL: https://youtu.be/{video_id}")
         
     except Exception as e:
         await status.edit_text(f"❌ Error: {str(e)}")
@@ -174,5 +170,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 if __name__ == "__main__":
     app = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
     app.add_handler(MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message))
-    print("🤖 Bot is live on Phone/PC!")
+    print("🤖 Bot is active. Send a topic on Telegram!")
     app.run_polling()
+    
