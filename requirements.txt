@@ -1,0 +1,6 @@
+openai
+moviepy
+python-telegram-bot
+google-api-python-client
+google-auth-oauthlib
+requests
