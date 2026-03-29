@@ -1,6 +1,6 @@
-google-generativeai
-moviepy==1.0.3
-python-telegram-bot==20.8
+google-genai
+moviepy>=2.0.0
+python-telegram-bot
 requests
 google-api-python-client
 google-auth-oauthlib
