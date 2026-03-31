@@ -1,8 +1,7 @@
-python-telegram-bot==20.8
-huggingface_hub==0.20.3
-moviepy==1.0.3
-edge-tts==6.1.9
-Pillow==10.2.0
-numpy==1.26.4
-requests==2.31.0
-aiohttp==3.9.3
+python-telegram-bot
+huggingface_hub
+moviepy
+edge-tts
+Pillow
+numpy
+requests
