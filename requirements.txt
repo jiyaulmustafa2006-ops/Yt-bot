@@ -1,7 +1,8 @@
-google-genai
-moviepy>=2.0.0
-python-telegram-bot
-requests
-google-api-python-client
-google-auth-httplib2
-google-auth-oauthlib
+python-telegram-bot==20.8
+huggingface_hub==0.20.3
+moviepy==1.0.3
+edge-tts==6.1.9
+Pillow==10.2.0
+numpy==1.26.4
+requests==2.31.0
+aiohttp==3.9.3
