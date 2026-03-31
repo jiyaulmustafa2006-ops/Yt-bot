@@ -8,8 +8,8 @@ import edge_tts
 from moviepy.editor import ImageClip, AudioFileClip, concatenate_videoclips, vfx, CompositeVideoClip
 
 # --- CONFIGURATION ---
-HF_TOKEN = "YOUR_HUGGING_FACE_TOKEN" # Apna Hugging Face token yahan dalein
-TELEGRAM_TOKEN = "YOUR_TELEGRAM_BOT_TOKEN" # BotFather wala token
+HF_TOKEN = "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" # Apna Hugging Face token yahan dalein
+TELEGRAM_TOKEN = "8080221095:AAFnsPW-6FvmUUZk2IGutf_tQFlo-CI5wdE" # BotFather wala token
 
 client = InferenceClient(token=HF_TOKEN)
 
