@@ -1,7 +1,7 @@
 python-telegram-bot
 huggingface_hub
-moviepy
+moviepy==1.0.3
 edge-tts
 Pillow
-numpy
+numpy<2.0.0
 requests
